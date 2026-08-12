@@ -34,8 +34,9 @@ public class AuthController {
             @RequestBody RegisterRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest()
-                    .body("Email already registered");
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Email already registered");
+            return ResponseEntity.badRequest().body(error);
         }
 
         User user = new User();
@@ -58,17 +59,18 @@ public class AuthController {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElse(null);
 
+        Map<String, String> error = new HashMap<>();
+        error.put("message", "Invalid email or password");
+
         if (user == null) {
-            return ResponseEntity.status(401)
-                    .body("Invalid email or password");
+            return ResponseEntity.status(401).body(error);
         }
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
 
-            return ResponseEntity.status(401)
-                    .body("Invalid email or password");
+            return ResponseEntity.status(401).body(error);
         }
 
         String token = jwtService.generateToken(user.getEmail());
