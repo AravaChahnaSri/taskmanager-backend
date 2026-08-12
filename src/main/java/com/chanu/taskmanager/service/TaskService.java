@@ -15,11 +15,14 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final BlockchainService blockchainService;
 
     public TaskService(TaskRepository taskRepository,
-                       UserRepository userRepository) {
+                       UserRepository userRepository,
+                       BlockchainService blockchainService) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.blockchainService = blockchainService;
     }
 
     // =========================
@@ -44,7 +47,12 @@ public class TaskService {
 
         task.setUser(user);
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+        try {
+            blockchainService.recordBlock(savedTask.getId(), "TASK_CREATED: " + savedTask.getStatus());
+        } catch (Exception ignored) {}
+
+        return savedTask;
     }
 
     // =========================
@@ -110,7 +118,12 @@ public class TaskService {
         existingTask.setDueDate(task.getDueDate());
         existingTask.setEstimatedTime(task.getEstimatedTime());
 
-        return taskRepository.save(existingTask);
+        Task updatedTask = taskRepository.save(existingTask);
+        try {
+            blockchainService.recordBlock(updatedTask.getId(), "STATUS_UPDATED: " + updatedTask.getStatus());
+        } catch (Exception ignored) {}
+
+        return updatedTask;
     }
 
     // =========================
@@ -135,6 +148,9 @@ public class TaskService {
         }
 
         taskRepository.delete(task);
+        try {
+            blockchainService.recordBlock(id, "TASK_DELETED");
+        } catch (Exception ignored) {}
 
         return true;
     }
