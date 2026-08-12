@@ -30,7 +30,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/", "/health", "/api/auth/**").permitAll()
                 .anyRequest().authenticated()
             )
 
@@ -47,8 +47,8 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-            List.of("http://localhost:5173")
+        configuration.setAllowedOriginPatterns(
+            List.of("*")
         );
 
         configuration.setAllowedMethods(
